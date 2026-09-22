@@ -14,9 +14,11 @@ Monster Heavy asks the harder question:
 
 ## Status
 
-**Architecture locked. Phase 1 persistence foundation implemented; execution is not implemented.**
+**Architecture locked. Phase 2 proposal, approval, evidence, and policy boundaries implemented; execution is not implemented.**
 
-The architecture contract and acceptance criteria remain the source of truth. Phase 1 adds only project setup and PostgreSQL persistence; this is not the complete release.
+The architecture contract and acceptance criteria remain the source of truth. Phase 2 adds validated, immutable proposals, human decisions, typed evidence, lifecycle checks, and versioned policy publication/resolution on the Phase 1 PostgreSQL foundation. This is not the complete release.
+
+See [Phase 2 boundaries and acceptance evidence](docs/PHASE2_BOUNDARIES.md) for the service contracts, design decisions, tests, and deferred execution behavior.
 
 - [Architecture Contract](docs/ARCHITECTURE_CONTRACT.md)
 - [Acceptance Criteria](docs/ACCEPTANCE_CRITERIA.md)
@@ -66,7 +68,7 @@ Paper trading only. No broker integration. No real money.
 
 The portfolio project is about enterprise AI governance, reliable execution, failure recovery, and evidence—not market prediction.
 
-## Phase 1 local environment
+## Local validation environment
 
 Requires Docker with Docker Compose. Set up the local credential once:
 
@@ -77,11 +79,11 @@ docker compose up --build -d
 ```
 
 This starts PostgreSQL 17 with persistent storage and runs the migration container to
-completion. There is no API or worker service in Phase 1. Check migration completion
+completion. There is no API or worker service. Check migration completion
 with `docker compose logs migrate` and service health with `docker compose ps -a`.
 `docker compose down` preserves the database volume.
 
-Run the full foundation validation against this **disposable development database**:
+Run the full validation suite against this **disposable development database**:
 
 ```sh
 docker compose --profile validation run --build --rm validation
