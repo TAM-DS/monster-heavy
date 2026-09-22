@@ -1,5 +1,9 @@
 # Phase 1 persistence contract
 
+This document records the unchanged Phase 1 storage guarantees and original deferrals.
+[Phase 2 boundaries](PHASE2_BOUNDARIES.md) now implements the proposal, approval, evidence,
+and policy application behavior on this schema; no migration or Phase 1 test change was needed.
+
 This implements the foundation of the architecture contract, not the complete release.
 No API, model adapter, worker, execution service, market integration, or compensation
 workflow exists. PostgreSQL 17 and Python 3.13 are the tested versions. Psycopg is the
