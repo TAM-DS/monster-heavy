@@ -14,9 +14,9 @@ Monster Heavy asks the harder question:
 
 ## Status
 
-**Architecture locked. Implementation has not started.**
+**Architecture locked. Phase 1 persistence foundation implemented; execution is not implemented.**
 
-The first artifacts in this repository are the architecture contract and acceptance criteria. They exist specifically to prevent the implementation from drifting into a larger but less meaningful system.
+The architecture contract and acceptance criteria remain the source of truth. Phase 1 adds only project setup and PostgreSQL persistence; this is not the complete release.
 
 - [Architecture Contract](docs/ARCHITECTURE_CONTRACT.md)
 - [Acceptance Criteria](docs/ACCEPTANCE_CRITERIA.md)
@@ -54,10 +54,10 @@ The system will deliberately avoid infrastructure that does not earn its place. 
 
 **Neither the model nor the human approver can bypass current reality.**
 
-A proposal is not authority.  
-Approval is not execution.  
-A retry is not a new consequence.  
-A successful response is not the source of truth.  
+A proposal is not authority.<br>
+Approval is not execution.<br>
+A retry is not a new consequence.<br>
+A successful response is not the source of truth.<br>
 The durable decision record is.
 
 ## Scope
@@ -65,3 +65,57 @@ The durable decision record is.
 Paper trading only. No broker integration. No real money.
 
 The portfolio project is about enterprise AI governance, reliable execution, failure recovery, and evidence—not market prediction.
+
+## Phase 1 local environment
+
+Requires Docker with Docker Compose. Set up the local credential once:
+
+```sh
+cp .env.example .env
+# Edit .env and choose POSTGRES_PASSWORD.
+docker compose up --build -d
+```
+
+This starts PostgreSQL 17 with persistent storage and runs the migration container to
+completion. There is no API or worker service in Phase 1. Check migration completion
+with `docker compose logs migrate` and service health with `docker compose ps -a`.
+`docker compose down` preserves the database volume.
+
+Run the full foundation validation against this **disposable development database**:
+
+```sh
+docker compose --profile validation run --build --rm validation
+```
+
+Tests insert fixture history, including committed concurrency cases. Do not point them
+at a production database. They never silently substitute SQLite or skip PostgreSQL tests.
+
+For a host Python 3.13 environment with uv and PostgreSQL already installed:
+
+```sh
+uv sync --frozen --extra dev
+. .venv/bin/activate
+export DATABASE_URL='postgresql://OWNER:PASSWORD@localhost:5432/monster_heavy'
+export TEST_DATABASE_URL="$DATABASE_URL"
+sh scripts/validate.sh
+```
+
+`uv.lock` records the resolved Python dependencies. The `dev` extra includes pytest
+and Ruff. Both host setup and the Docker image install with `uv sync --frozen --extra dev`.
+The image uses uv 0.12.4 and runs `uv lock --check` before installation to reject a
+lockfile that is out of date with `pyproject.toml`. Run that check locally with
+`uv lock --check`; use `uv lock` only when intentionally updating the lockfile.
+
+Validation compiles sources, checks lint/formatting, applies and verifies migrations,
+runs unit and PostgreSQL integration tests (including independent-connection races),
+and runs `git diff --check` when Git metadata is available. GitHub Actions builds the
+locked images, starts the declared Compose PostgreSQL service, waits for its health
+check, and runs the same suite through the Compose validation service. Its migration
+dependency must complete successfully first. CI checks committed whitespace separately,
+prints Compose logs, and always runs cleanup of containers, the network, and the database
+volume, including after failed validation. Unit tests alone can run with `pytest tests/unit`.
+
+See [Phase 1 persistence contract](docs/PERSISTENCE_CONTRACT.md) for the schema, runtime
+role, exact database guarantees, test-to-criterion mapping, and deferred behavior.
+The architecture and acceptance documents are unchanged. No OpenAI calls, business
+endpoints, workers, market data, compensation, or real-money execution path is present.

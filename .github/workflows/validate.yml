@@ -1,0 +1,27 @@
+name: Validate
+on: [push, pull_request]
+jobs:
+  persistence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      POSTGRES_PASSWORD: ci-only-password
+      COMPOSE_PROJECT_NAME: monster-heavy-ci
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Compose configuration
+        run: docker compose --profile validation config --quiet
+      - name: Build locked migration and validation images
+        run: docker compose --profile validation build
+      - name: Start PostgreSQL and wait for its health check
+        run: docker compose up -d --wait --wait-timeout 120 postgres
+      - name: Run migrations and all Phase 1 validation
+        run: docker compose --profile validation run --rm validation
+      - name: Check committed whitespace
+        run: git show --format= --check HEAD
+      - name: Show Compose logs
+        if: always()
+        run: docker compose --profile validation logs --no-color
+      - name: Clean up Compose containers, network, and database volume
+        if: always()
+        run: docker compose --profile validation down --volumes --remove-orphans
