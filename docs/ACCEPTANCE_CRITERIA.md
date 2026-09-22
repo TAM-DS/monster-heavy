@@ -8,156 +8,156 @@ A feature is not complete because a demo looks correct. It is complete when an a
 
 ### AC-01 — Model output cannot execute
 
-**Given** trusted grounding evidence  
-**When** the model produces a valid structured recommendation  
-**Then** only a `PENDING` proposal and its provenance are persisted  
-**And** portfolio cash and positions are unchanged  
+**Given** trusted grounding evidence<br>
+**When** the model produces a valid structured recommendation<br>
+**Then** only a `PENDING` proposal and its provenance are persisted<br>
+**And** portfolio cash and positions are unchanged<br>
 **And** no approval or accepted execution record exists.
 
 ### AC-02 — Human approval does not mutate the portfolio
 
-**Given** a `PENDING` proposal  
-**When** a human approves the immutable terms  
-**Then** an approval record exists and the proposal becomes `APPROVED`  
-**And** no portfolio mutation occurs  
+**Given** a `PENDING` proposal<br>
+**When** a human approves the immutable terms<br>
+**Then** an approval record exists and the proposal becomes `APPROVED`<br>
+**And** no portfolio mutation occurs<br>
 **And** no accepted execution record exists.
 
 ### AC-03 — Approved terms are immutable
 
-**Given** an approved proposal  
-**When** symbol, side, quantity, approved price, or other execution terms are changed  
-**Then** execution is refused  
+**Given** an approved proposal<br>
+**When** symbol, side, quantity, approved price, or other execution terms are changed<br>
+**Then** execution is refused<br>
 **And** the original approval cannot be reused for the modified terms.
 
 ## B. Evidence and current reality
 
 ### AC-04 — Fresh execution evidence is required
 
-**Given** an approved proposal  
-**When** execution evidence exceeds the configured age limit  
-**Then** the attempt is durably `REJECTED` with a stale-evidence reason  
-**And** the portfolio remains unchanged  
+**Given** an approved proposal<br>
+**When** execution evidence exceeds the configured age limit<br>
+**Then** the attempt is durably `REJECTED` with a stale-evidence reason<br>
+**And** the portfolio remains unchanged<br>
 **And** the ledger links the rejected attempt to the evidence that failed freshness validation.
 
 ### AC-05 — Price drift can invalidate approval
 
-**Given** an approved proposal with an approved reference price  
-**When** fresh execution evidence exceeds the active policy's permitted drift  
-**Then** execution is durably `REJECTED`  
+**Given** an approved proposal with an approved reference price<br>
+**When** fresh execution evidence exceeds the active policy's permitted drift<br>
+**Then** execution is durably `REJECTED`<br>
 **And** no trade consequence occurs.
 
 ### AC-06 — Grounding evidence cannot stand in for execution evidence
 
-**Given** a proposal grounded in valid market evidence  
-**When** execution is attempted without separately valid execution evidence  
+**Given** a proposal grounded in valid market evidence<br>
+**When** execution is attempted without separately valid execution evidence<br>
 **Then** execution is refused.
 
 ## C. Current policy
 
 ### AC-07 — Policy is evaluated at execution time
 
-**Given** a proposal approved under policy version A  
-**And** policy version B becomes active before execution and is stricter  
-**When** the proposal violates B  
-**Then** execution is `REJECTED`  
+**Given** a proposal approved under policy version A<br>
+**And** policy version B becomes active before execution and is stricter<br>
+**When** the proposal violates B<br>
+**Then** execution is `REJECTED`<br>
 **And** the attempt records policy B's immutable version/digest.
 
 ### AC-08 — Policy publication is versioned and immutable
 
-**Given** a published policy version  
-**When** policy rules change  
-**Then** a new policy version is created  
+**Given** a published policy version<br>
+**When** policy rules change<br>
+**Then** a new policy version is created<br>
 **And** historical execution records continue to resolve the exact prior policy version.
 
 ## D. Deterministic portfolio controls
 
 ### AC-09 — Insufficient cash blocks an approved buy
 
-**Given** a human-approved buy whose notional exceeds available cash  
-**When** execution reaches authoritative portfolio validation  
-**Then** the attempt is `REJECTED` with `InsufficientCash`  
-**And** cash and positions remain bit-for-bit unchanged  
+**Given** a human-approved buy whose notional exceeds available cash<br>
+**When** execution reaches authoritative portfolio validation<br>
+**Then** the attempt is `REJECTED` with `InsufficientCash`<br>
+**And** cash and positions remain bit-for-bit unchanged<br>
 **And** the proposal remains `APPROVED` if still eligible for a future attempt.
 
 ### AC-10 — Valid execution changes state once
 
-**Given** an approved proposal, valid policy, fresh evidence, and sufficient portfolio capacity  
-**When** execution succeeds  
-**Then** the portfolio changes exactly once  
-**And** the proposal becomes `EXECUTED`  
+**Given** an approved proposal, valid policy, fresh evidence, and sufficient portfolio capacity<br>
+**When** execution succeeds<br>
+**Then** the portfolio changes exactly once<br>
+**And** the proposal becomes `EXECUTED`<br>
 **And** exactly one accepted execution/ledger record exists.
 
 ## E. Idempotency and concurrency
 
 ### AC-11 — Same idempotency key returns one durable result
 
-**Given** an execution request with idempotency key K  
-**When** K is submitted multiple times  
-**Then** one durable execution request exists  
-**And** all callers resolve the same result  
+**Given** an execution request with idempotency key K<br>
+**When** K is submitted multiple times<br>
+**Then** one durable execution request exists<br>
+**And** all callers resolve the same result<br>
 **And** there is at most one consequence.
 
 ### AC-12 — Concurrent workers cannot double-execute
 
-**Given** one approved proposal  
-**When** at least two independent workers race to execute it  
-**Then** at most one worker commits an accepted consequence  
-**And** there is exactly one portfolio mutation  
+**Given** one approved proposal<br>
+**When** at least two independent workers race to execute it<br>
+**Then** at most one worker commits an accepted consequence<br>
+**And** there is exactly one portfolio mutation<br>
 **And** exactly one accepted ledger record exists.
 
 This test must use independent PostgreSQL connections/processes or equivalent isolated workers. A single-process mock does not satisfy the criterion.
 
 ### AC-13 — A second idempotency key still cannot create a second accepted consequence
 
-**Given** proposal P has already executed successfully  
-**When** a new execution request with a different idempotency key targets P  
+**Given** proposal P has already executed successfully<br>
+**When** a new execution request with a different idempotency key targets P<br>
 **Then** the system refuses another accepted consequence.
 
 ## F. Failure recovery
 
 ### AC-14 — Worker death before commit has no consequence
 
-**Given** a worker has claimed an execution request  
-**When** the worker terminates before the authoritative transaction commits  
-**Then** no portfolio mutation exists  
+**Given** a worker has claimed an execution request<br>
+**When** the worker terminates before the authoritative transaction commits<br>
+**Then** no portfolio mutation exists<br>
 **And** another worker can later recover the request safely.
 
 ### AC-15 — Worker death after commit is safe to retry
 
-**Given** an accepted consequence commits successfully  
-**And** the worker terminates before returning/acknowledging success  
-**When** the request is retried  
-**Then** the existing committed result is returned or reconstructed  
+**Given** an accepted consequence commits successfully<br>
+**And** the worker terminates before returning/acknowledging success<br>
+**When** the request is retried<br>
+**Then** the existing committed result is returned or reconstructed<br>
 **And** no second consequence occurs.
 
 ### AC-16 — Atomicity survives injected persistence failure
 
-**Given** an otherwise valid execution  
-**When** an injected database failure occurs before transaction commit  
+**Given** an otherwise valid execution<br>
+**When** an injected database failure occurs before transaction commit<br>
 **Then** portfolio state, proposal status, accepted execution, ledger evidence, and outbox state all roll back together.
 
 No partial success is allowed.
 
 ### AC-17 — Recoverable work is reclaimable
 
-**Given** a worker claims a queued request and its lease expires without a terminal result  
-**When** another worker scans for work  
+**Given** a worker claims a queued request and its lease expires without a terminal result<br>
+**When** another worker scans for work<br>
 **Then** that worker can reclaim the request without violating idempotency or at-most-once consequence.
 
 ## G. Proposal lifecycle
 
 ### AC-18 — Expired proposal cannot execute
 
-**Given** an approved proposal whose expiry time has passed  
-**When** execution is attempted  
-**Then** it is durably blocked  
+**Given** an approved proposal whose expiry time has passed<br>
+**When** execution is attempted<br>
+**Then** it is durably blocked<br>
 **And** no portfolio mutation occurs.
 
 ### AC-19 — Superseded approval cannot authorize the replacement
 
-**Given** proposal revision A is approved  
-**And** revision B supersedes A  
-**When** execution targets A or attempts to apply A's approval to B  
+**Given** proposal revision A is approved<br>
+**And** revision B supersedes A<br>
+**When** execution targets A or attempts to apply A's approval to B<br>
 **Then** execution is refused.
 
 ## H. Ledger and evidence reconstruction
@@ -189,8 +189,8 @@ For any accepted attempt, a reviewer can retrieve:
 
 ### AC-22 — Ledger mutation is prohibited
 
-**Given** an existing decision-ledger record  
-**When** ordinary application or repository code attempts to update, delete, or replace it  
+**Given** an existing decision-ledger record<br>
+**When** ordinary application or repository code attempts to update, delete, or replace it<br>
 **Then** PostgreSQL rejects the mutation.
 
 The control must be tested directly.
@@ -199,9 +199,9 @@ The control must be tested directly.
 
 ### AC-23 — Compensation is a new governed action
 
-**Given** an accepted consequence  
-**When** an operator requests compensation  
-**Then** the system creates a new compensating command linked to the original execution  
+**Given** an accepted consequence<br>
+**When** an operator requests compensation<br>
+**Then** the system creates a new compensating command linked to the original execution<br>
 **And** the original accepted ledger record remains unchanged.
 
 ### AC-24 — Compensation cannot silently erase history

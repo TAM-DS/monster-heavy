@@ -54,10 +54,10 @@ The system will deliberately avoid infrastructure that does not earn its place. 
 
 **Neither the model nor the human approver can bypass current reality.**
 
-A proposal is not authority.  
-Approval is not execution.  
-A retry is not a new consequence.  
-A successful response is not the source of truth.  
+A proposal is not authority.<br>
+Approval is not execution.<br>
+A retry is not a new consequence.<br>
+A successful response is not the source of truth.<br>
 The durable decision record is.
 
 ## Scope
