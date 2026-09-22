@@ -1,0 +1,28 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "monster-heavy"
+version = "0.1.0"
+description = "Governed paper execution: persistence foundation"
+requires-python = ">=3.13,<3.14"
+dependencies = ["psycopg[binary]>=3.2,<4"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.3,<10", "ruff>=0.11,<1"]
+
+[project.scripts]
+monster-heavy-migrate = "monster_heavy.persistence.migrate:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = ["integration: requires a real PostgreSQL database", "concurrency: independent PostgreSQL connection races"]
+
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]

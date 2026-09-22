@@ -1,0 +1,44 @@
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: monster_heavy_owner
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: monster_heavy
+    command: ["postgres", "-c", "timezone=UTC"]
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U monster_heavy_owner -d monster_heavy"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  migrate:
+    build: .
+    environment:
+      PGHOST: postgres
+      PGUSER: monster_heavy_owner
+      PGPASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      PGDATABASE: monster_heavy
+      DATABASE_URL: "dbname=monster_heavy"
+    depends_on:
+      postgres:
+        condition: service_healthy
+  validation:
+    build: .
+    profiles: ["validation"]
+    command: ["sh", "scripts/validate.sh"]
+    environment:
+      PGHOST: postgres
+      PGUSER: monster_heavy_owner
+      PGPASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      PGDATABASE: monster_heavy
+      DATABASE_URL: "dbname=monster_heavy"
+      TEST_DATABASE_URL: "dbname=monster_heavy"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+volumes:
+  postgres_data:
