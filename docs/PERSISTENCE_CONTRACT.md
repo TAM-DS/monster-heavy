@@ -1,5 +1,8 @@
 # Phase 1 persistence contract
 
+Phase 4 now implements the [authoritative execution core](PHASE4_BOUNDARIES.md) on the
+unchanged schema. Execution deferrals below describe this document's original phase scope.
+
 This document records the unchanged Phase 1 storage guarantees and original deferrals.
 [Phase 2 boundaries](PHASE2_BOUNDARIES.md) now implements the proposal, approval, evidence,
 and policy application behavior on this schema; no migration or Phase 1 test change was needed.

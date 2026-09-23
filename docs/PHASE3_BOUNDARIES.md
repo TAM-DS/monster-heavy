@@ -1,5 +1,8 @@
 # Phase 3: Proposal Agent
 
+Phase 4 now implements the [authoritative execution core](PHASE4_BOUNDARIES.md) on the
+unchanged schema. Execution deferrals below describe this document's original phase scope.
+
 The Proposal Agent is Monster Heavy's only AI agent. It produces a non-authoritative
 proposal; human authorization and all consequential execution remain separate boundaries.
 
