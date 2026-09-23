@@ -5,8 +5,9 @@ This document records the unchanged Phase 1 storage guarantees and original defe
 and policy application behavior on this schema; no migration or Phase 1 test change was needed.
 
 This implements the foundation of the architecture contract, not the complete release.
-No API, model adapter, worker, execution service, market integration, or compensation
-workflow exists. PostgreSQL 17 and Python 3.13 are the tested versions. Psycopg is the
+Phase 3 now adds a [model adapter](PHASE3_BOUNDARIES.md) above ProposalService; storage
+guarantees are unchanged. No API, worker, execution service, market integration, or
+compensation workflow exists. PostgreSQL 17 and Python 3.13 are the tested versions. Psycopg is the
 PostgreSQL driver; plain SQL migrations avoid an ORM or additional migration framework.
 
 ## Layout and records
