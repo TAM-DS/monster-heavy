@@ -1,5 +1,8 @@
 # Phase 2 application and domain boundaries
 
+This records Phase 2 scope. [Phase 3](PHASE3_BOUNDARIES.md) now adds the Proposal Agent
+without changing these boundaries or the persistence schema.
+
 Phase 2 accepts validated structured recommendations without a model adapter. It adds
 proposal, human decision, lifecycle, typed observation, and policy publication/resolution
 services. It adds no execution path, framework, dependency, or migration.
