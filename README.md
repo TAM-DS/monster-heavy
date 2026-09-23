@@ -14,13 +14,15 @@ Monster Heavy asks the harder question:
 
 ## Status
 
-**Architecture locked. Phase 3 Proposal Agent implemented; execution is not implemented.**
+**Architecture locked. Phase 4 authoritative deterministic paper execution implemented.**
 
-The architecture contract and acceptance criteria remain the source of truth. Phase 2 adds validated, immutable proposals, human decisions, typed evidence, lifecycle checks, and versioned policy publication/resolution on the Phase 1 PostgreSQL foundation. Phase 3 adds the sole AI agent: constrained model output becomes only a pending proposal through deterministic validation and ProposalService. This is not the complete release.
+The architecture contract and acceptance criteria remain the source of truth. Phase 2 adds validated, immutable proposals, human decisions, typed evidence, lifecycle checks, and versioned policy publication/resolution on the Phase 1 PostgreSQL foundation. Phase 3 adds the sole AI agent: constrained model output becomes only a pending proposal through deterministic validation and ProposalService. Phase 4 adds durable execution requests, current-policy/current-evidence revalidation, atomic portfolio consequences, durable refusals, and committed-result replay. This is not the complete release.
 
 See [Phase 2 boundaries and acceptance evidence](docs/PHASE2_BOUNDARIES.md) for the service contracts, design decisions, tests, and deferred execution behavior.
 
 See [Phase 3 authority boundary and acceptance evidence](docs/PHASE3_BOUNDARIES.md) for model constraints, trusted field binding, provenance, and validation results.
+
+See [Phase 4 execution boundaries and acceptance evidence](docs/PHASE4_BOUNDARIES.md) for transaction ordering, idempotency, exact portfolio rules, concurrency, and rollback tests.
 
 - [Architecture Contract](docs/ARCHITECTURE_CONTRACT.md)
 - [Acceptance Criteria](docs/ACCEPTANCE_CRITERIA.md)
@@ -121,6 +123,6 @@ volume, including after failed validation. Unit tests alone can run with `pytest
 
 See [Phase 1 persistence contract](docs/PERSISTENCE_CONTRACT.md) for the schema, runtime
 role, exact database guarantees, test-to-criterion mapping, and deferred behavior.
-The architecture and acceptance documents are unchanged. The OpenAI adapter is injectable; validation uses mocked HTTP responses and makes no live
+The architecture contract remains unchanged. Phase-specific acceptance evidence is linked above. The OpenAI adapter is injectable; validation uses mocked HTTP responses and makes no live
 OpenAI calls. No business endpoints, workers, market data, compensation, or real-money
 execution path is present.

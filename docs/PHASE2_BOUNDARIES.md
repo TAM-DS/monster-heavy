@@ -1,5 +1,8 @@
 # Phase 2 application and domain boundaries
 
+Phase 4 now implements the [authoritative execution core](PHASE4_BOUNDARIES.md) on the
+unchanged schema. Execution deferrals below describe this document's original phase scope.
+
 This records Phase 2 scope. [Phase 3](PHASE3_BOUNDARIES.md) now adds the Proposal Agent
 without changing these boundaries or the persistence schema.
 

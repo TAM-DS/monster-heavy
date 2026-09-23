@@ -4,6 +4,13 @@ These criteria are the definition of done for the first complete Monster Heavy r
 
 A feature is not complete because a demo looks correct. It is complete when an automated test or reproducible failure scenario proves the required property.
 
+## Current implementation evidence
+
+[Phase 4 evidence](PHASE4_BOUNDARIES.md#acceptance-evidence) maps the deterministic execution
+core to these criteria. It strengthens or completes core execution checks without claiming
+worker leasing/death recovery, compensation, metrics, or the full release gate. Prior phase
+evidence remains in the Phase 2/3 and persistence documents.
+
 ## A. Authority boundaries
 
 ### AC-01 — Model output cannot execute
