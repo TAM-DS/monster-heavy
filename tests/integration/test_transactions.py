@@ -105,22 +105,34 @@ def test_all_row_models_match_migrated_schema(db, data):
 def test_migration_is_repeatable_and_verified(dsn):
     migrate(dsn)
     migrate(dsn, check=True)
+    from hashlib import sha256
+    from importlib.resources import files
+
+    expected = {
+        path.name: sha256(path.read_bytes()).hexdigest()
+        for path in files("monster_heavy.persistence").joinpath("migrations").iterdir()
+        if path.name.endswith(".sql")
+    }
     with open_db(dsn) as conn:
-        assert (
-            conn.execute("SELECT count(*) AS n FROM public.schema_migrations").fetchone()["n"] == 1
-        )
+        actual = {
+            row["name"]: row["checksum"]
+            for row in conn.execute("SELECT name, checksum FROM public.schema_migrations")
+        }
+        assert actual == expected
 
 
 def test_migration_checksum_mismatch_is_detected(dsn):
     # Restore even on failure: no modified migration history is left by this test.
     with open_db(dsn) as conn:
-        original = conn.execute("SELECT checksum FROM public.schema_migrations").fetchone()[
-            "checksum"
-        ]
+        original = conn.execute("SELECT name, checksum FROM public.schema_migrations").fetchall()
         conn.execute("UPDATE public.schema_migrations SET checksum='tampered'")
     try:
         with pytest.raises(RuntimeError, match="checksum mismatch"):
             migrate(dsn, check=True)
     finally:
         with open_db(dsn) as conn:
-            conn.execute("UPDATE public.schema_migrations SET checksum=%s", (original,))
+            for row in original:
+                conn.execute(
+                    "UPDATE public.schema_migrations SET checksum=%s WHERE name=%s",
+                    (row["checksum"], row["name"]),
+                )

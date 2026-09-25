@@ -274,3 +274,45 @@ Monster Heavy v1 is complete only when all acceptance criteria are either:
 - explicitly removed from scope through a documented architecture change before release.
 
 “No test because the happy path worked” is not an acceptable status.
+
+## Phase 5 acceptance evidence
+
+No acceptance criterion is removed. PASS below means the named deterministic tests pass;
+it does not certify throughput, availability, or production authentication. The full release
+gate remains **OPEN** for the two items explicitly marked pending. Detailed semantics and
+validation limitations are in [Phase 5 release evidence](PHASE5_RELEASE.md).
+
+Test paths in the following table are relative to `tests/`.
+
+| Criterion | Status | Automated evidence |
+| --- | --- | --- |
+| AC-01 | PASS | `integration/test_proposal_agent_boundary.py::test_model_output_only_creates_pending_without_consequence` |
+| AC-02 | PASS | `integration/test_boundaries.py::test_human_decision_atomic_and_non_consequential` |
+| AC-03 | PASS | `integration/test_constraints.py::test_proposal_terms_cannot_change`, `test_approval_cannot_bind_wrong_hash` |
+| AC-04 | PASS | `integration/test_execution_core.py::test_durable_refusals[stale-StaleEvidence]` |
+| AC-05 | PASS | `integration/test_execution_core.py::test_durable_refusals[drift-PriceDriftExceeded]` |
+| AC-06 | PASS | `integration/test_execution_core.py::test_durable_refusals[grounding-ExecutionEvidenceRequired]` |
+| AC-07 | PASS | `integration/test_execution_core.py::test_rechecks_after_independent_lock_wait`, `test_actual_execution_notional_rechecked_with_current_policy` |
+| AC-08 | PASS | `integration/test_constraints.py::test_policy_versions_preserve_exact_reference`, `integration/test_execution_core.py::test_policy_publication_waits_for_execution_decision` |
+| AC-09 | PASS | `integration/test_execution_core.py::test_durable_refusals[cash-InsufficientCash]` |
+| AC-10 | PASS | `integration/test_execution_core.py::test_acceptance_reconstruction_and_replay`, `test_existing_positions` |
+| AC-11 | PASS | `integration/test_execution_core.py::test_independent_execution_connections_race`, `test_idempotency_conflict` |
+| AC-12 | PASS | `integration/test_execution_core.py::test_independent_execution_connections_race`, `integration/test_recovery_release.py::test_expired_stale_worker_cannot_duplicate_consequence` |
+| AC-13 | PASS | `integration/test_execution_core.py::test_database_unique_slot_survives_application_status_tampering` |
+| AC-14 | PASS | `integration/test_recovery_release.py::test_os_worker_death_and_recovery[before_commit]` — spawned OS process killed after uncommitted writes |
+| AC-15 | PASS | `integration/test_recovery_release.py::test_os_worker_death_and_recovery[after_commit]` — spawned OS process killed before acknowledgement |
+| AC-16 | PASS | `integration/test_execution_core.py::test_failure_after_all_writes_rolls_back_and_request_retries` |
+| AC-17 | PASS | `integration/test_recovery_release.py::test_expired_stale_worker_cannot_duplicate_consequence`, `test_claim_skip_locked_and_database_time`, `integration/test_release_controls.py::test_independent_claimers_get_one_lease` |
+| AC-18 | PASS | `integration/test_execution_core.py::test_rechecks_after_independent_lock_wait[expiry]` |
+| AC-19 | PASS | `integration/test_execution_core.py::test_pending_replacement_has_no_inherited_approval`, `test_rechecks_after_independent_lock_wait[supersession]` |
+| AC-20 | PASS | `integration/test_execution_core.py::test_durable_refusals`, `integration/test_audit_api.py::test_api_readiness_metrics_exact_money_and_reconstruction` |
+| AC-21 | PASS | `integration/test_execution_core.py::test_acceptance_reconstruction_and_replay`, `integration/test_recovery_release.py::test_compensation_full_governance_and_reconstruction` |
+| AC-22 | PASS | `integration/test_constraints.py::test_history_is_immutable_even_for_owner`, `integration/test_transactions.py::test_runtime_role_cannot_mutate_or_disable_history` |
+| AC-23 | PASS | `integration/test_recovery_release.py::test_compensation_full_governance_and_reconstruction`, `integration/test_release_controls.py::test_database_enforces_compensation_link_and_terms` |
+| AC-24 | PASS | `integration/test_recovery_release.py::test_compensation_full_governance_and_reconstruction`, `integration/test_release_controls.py::test_new_durable_history_cannot_be_mutated` |
+| AC-25 | PASS | `integration/test_recovery_release.py::test_durable_metrics_and_log_independent_audit` |
+| AC-26 | PASS | `integration/test_recovery_release.py::test_durable_metrics_and_log_independent_audit` — fresh stores reconstruct unchanged history after log deletion |
+| AC-27 | PENDING DOCKER-BACKED STARTUP EVIDENCE | Compose configuration validates and the live Uvicorn test passes locally. Docker-backed image build and PostgreSQL/migration/API startup remain pending until CI proves them. |
+| AC-28 | PENDING FINAL GITHUB ACTIONS EVIDENCE | Complete local validation passes: 373 tests. The narrow two-test migration-history update was explicitly approved and applied. CI and `scripts/validate.sh` cover the required checks; this criterion requires final GitHub Actions evidence. |
+| AC-29 | PASS | `unit/test_release_scope.py`, `unit/test_execution.py`, `integration/test_audit_api.py::test_api_has_no_mutation_routes`; locked dependencies and deterministic executor provide only paper consequences |
+| AC-30 | PASS | README behavior claims map to this table; exact run results and explicit remaining gates are recorded in `PHASE5_RELEASE.md`. No SLA or throughput claim is made. |

@@ -48,6 +48,9 @@ class ExecutionStore:
                     actor.role,
                 ):
                     raise BoundaryError("IdempotencyConflict")
+                conn.execute(
+                    "SELECT monster_heavy.record_replay(%s, 'SUBMISSION_REPLAY')", (row["id"],)
+                )
             return ExecutionRequest(**row)
 
     def result(self, request_id: UUID):
@@ -77,6 +80,9 @@ class ExecutionStore:
                 raise BoundaryError("ExecutionRequestNotFound")
             result = self._result(conn, request_id)
             if result is not None:
+                conn.execute(
+                    "SELECT monster_heavy.record_replay(%s, 'EXECUTION_REPLAY')", (request_id,)
+                )
                 return result
             proposal = _locked(conn, request["proposal_id"])
             portfolio = conn.execute(
