@@ -277,9 +277,9 @@ Monster Heavy v1 is complete only when all acceptance criteria are either:
 
 ## Phase 5 acceptance evidence
 
-No acceptance criterion is removed. PASS below means the named deterministic tests pass;
+No acceptance criterion is removed. PASS below means the named deterministic tests or CI checks pass;
 it does not certify throughput, availability, or production authentication. The full release
-gate remains **OPEN** for the two items explicitly marked pending. Detailed semantics and
+gate is **SATISFIED** for AC-01 through AC-30. Detailed semantics and
 validation limitations are in [Phase 5 release evidence](PHASE5_RELEASE.md).
 
 Test paths in the following table are relative to `tests/`.
@@ -312,7 +312,7 @@ Test paths in the following table are relative to `tests/`.
 | AC-24 | PASS | `integration/test_recovery_release.py::test_compensation_full_governance_and_reconstruction`, `integration/test_release_controls.py::test_new_durable_history_cannot_be_mutated` |
 | AC-25 | PASS | `integration/test_recovery_release.py::test_durable_metrics_and_log_independent_audit` |
 | AC-26 | PASS | `integration/test_recovery_release.py::test_durable_metrics_and_log_independent_audit` — fresh stores reconstruct unchanged history after log deletion |
-| AC-27 | PENDING DOCKER-BACKED STARTUP EVIDENCE | Compose configuration validates and the live Uvicorn test passes locally. Docker-backed image build and PostgreSQL/migration/API startup remain pending until CI proves them. |
-| AC-28 | PENDING FINAL GITHUB ACTIONS EVIDENCE | Complete local validation passes: 373 tests. The narrow two-test migration-history update was explicitly approved and applied. CI and `scripts/validate.sh` cover the required checks; this criterion requires final GitHub Actions evidence. |
+| AC-27 | PASS | Successful Docker-backed GitHub Actions Validate run #14 for commit `74eb0544c444087545643eccf98a994a6883d8c9`: Compose configuration, locked image build, PostgreSQL health, migrations, read-only API startup, and HTTP `/health`, `/ready`, and `/metrics` passed. See [release evidence](PHASE5_RELEASE.md#github-actions-validation). |
+| AC-28 | PASS | GitHub Actions Validate run #14 for commit `74eb0544c444087545643eccf98a994a6883d8c9` passed migrations and complete v1 validation, committed whitespace check, and cleanup. CI and `scripts/validate.sh` cover the required checks. See [release evidence](PHASE5_RELEASE.md#github-actions-validation). |
 | AC-29 | PASS | `unit/test_release_scope.py`, `unit/test_execution.py`, `integration/test_audit_api.py::test_api_has_no_mutation_routes`; locked dependencies and deterministic executor provide only paper consequences |
-| AC-30 | PASS | README behavior claims map to this table; exact run results and explicit remaining gates are recorded in `PHASE5_RELEASE.md`. No SLA or throughput claim is made. |
+| AC-30 | PASS | README behavior claims map to this table; exact run results are recorded in `PHASE5_RELEASE.md`. No SLA or throughput claim is made. |

@@ -2,8 +2,9 @@
 
 The `phase5/recovery-release` branch is based directly on current Phase 4 main at
 `81cca4d`. Thomas has completed implementation review. The narrow two-test
-migration-history update was explicitly approved and applied. Phase 5 is in final
-release validation; Docker-backed startup and GitHub Actions evidence remain pending.
+migration-history update was explicitly approved and applied. Phase 5 release validation
+is complete: GitHub Actions Validate run #14 passed for commit
+`74eb0544c444087545643eccf98a994a6883d8c9`, including Docker-backed startup.
 
 ## Scheduling and recovery
 
@@ -124,8 +125,8 @@ production runtime; FastAPI and Uvicorn bring only their required transitive dep
 
 Compose starts PostgreSQL, completes migrations, then starts the API with a readiness health
 check. CI validates Compose, builds the locked image, executes validation, starts the API and
-checks health/readiness/metrics with HTTP. This host has no Docker/Compose runtime, so a local
-Compose startup cannot yet be recorded as passing.
+checks health/readiness/metrics with HTTP. These Docker-backed checks passed in GitHub
+Actions Validate run #14.
 
 ## Migration
 
@@ -143,8 +144,9 @@ Thomas's implementation review is complete. The approved migration tests compare
 migration names/checksums and restore tampered checksums by migration name. No execution
 or governance assertion was weakened. Complete local validation passes.
 
-Docker-backed image build/startup and final GitHub Actions evidence remain pending.
-The live Uvicorn test does not substitute for those release gates.
+GitHub Actions Validate run #14 passed Docker-backed image build/startup and complete v1
+validation for commit `74eb0544c444087545643eccf98a994a6883d8c9`.
+AC-01 through AC-30 are now satisfied.
 
 Intentionally outside v1: production authentication/SSO, real broker/real-money integration,
 real market-data acquisition, frontend, outbox delivery infrastructure, additional AI agents,
@@ -163,11 +165,28 @@ release-validation attempt stopped at Ruff E501 before executing tests.
 | `uv lock --check` | PASS |
 | `git diff --check` | PASS |
 | Compose configuration, `--profile validation config --quiet`, using the Phase 5 standalone Compose command | PASS |
-| Docker-backed image build and PostgreSQL/migration/API startup | PENDING evidence |
-| Final GitHub Actions run | PENDING evidence |
 
 The suite adds 76 Phase 5 cases (14 unit, 62 integration) to the original 297.
 Run times are observations of these local runs, not performance promises.
+
+### GitHub Actions validation
+
+GitHub Actions **Validate run #14: PASS**, for commit
+`74eb0544c444087545643eccf98a994a6883d8c9`.
+
+| Validation | Actual result |
+| --- | --- |
+| Compose configuration validation | PASS |
+| Actual Docker image build with locked dependencies | PASS |
+| PostgreSQL startup and health check | PASS |
+| Migration startup and complete v1 validation | PASS |
+| Read-only API container startup | PASS |
+| HTTP `/health`, `/ready`, and `/metrics` | PASS |
+| Committed whitespace check | PASS |
+| Cleanup | PASS |
+
+This successful Docker-backed validation closes AC-27 and AC-28. All acceptance criteria,
+AC-01 through AC-30, are satisfied.
 
 ### Files for review
 

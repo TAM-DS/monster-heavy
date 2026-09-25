@@ -9,9 +9,9 @@ and produces a constrained recommendation that can become a pending proposal. Hu
 policy checks, execution, worker scheduling, compensation and audit are deterministic application
 code. They are not additional AI agents.
 
-Phase 5 has completed implementation review and is in final release validation.
-Complete local validation passes. Docker-backed startup (AC-27) and final GitHub Actions
-evidence (AC-28) remain pending. See the [release evidence](docs/PHASE5_RELEASE.md) and
+Phase 5 has completed implementation review and release validation.
+Complete local validation and Docker-backed GitHub Actions Validate run #14 pass,
+satisfying AC-01 through AC-30. See the [release evidence](docs/PHASE5_RELEASE.md) and
 [AC-01–AC-30 test mapping](docs/ACCEPTANCE_CRITERIA.md#phase-5-acceptance-evidence).
 
 ## Implemented behavior
@@ -60,9 +60,9 @@ read-only API at `http://127.0.0.1:8000`. PostgreSQL and API host ports bind to 
 Inspect `docker compose ps -a` and `docker compose logs migrate api` for startup results.
 `docker compose down` preserves the database volume.
 
-The Compose configuration has been validated; its actual container startup remains an explicit
-release gate on a Docker-enabled host. Direct PostgreSQL and live Uvicorn tests are recorded
-separately in the release evidence.
+Compose configuration, Docker image build, PostgreSQL/migration startup, read-only API startup,
+and HTTP health/readiness/metrics passed in GitHub Actions Validate run #14.
+The release evidence also records direct PostgreSQL and live Uvicorn tests.
 
 Run validation against a **disposable development database**:
 
@@ -89,7 +89,7 @@ Validation compiles sources, checks Ruff lint/format, applies/verifies migration
 PostgreSQL integration, concurrency, process-death, compensation, metrics and API tests. CI uses
 the locked Docker image and verifies Compose configuration and API health. Dependency versions
 are recorded in `uv.lock`; the image verifies lockfile consistency before frozen installation.
-The [release record](docs/PHASE5_RELEASE.md) distinguishes checks actually run from pending gates.
+The [release record](docs/PHASE5_RELEASE.md) records successful local and GitHub Actions validation.
 
 ## Scope and contracts
 
