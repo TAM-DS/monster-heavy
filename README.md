@@ -1,12 +1,12 @@
 Monster Heavy
-A reference implementation of a governed AI trust boundary, and proof that the boundary survives concurrency, retries, stale evidence, policy changes, worker failure, and compensation, not just the happy path.
+A reference implementation of a governed AI trust boundary — and proof that the boundary survives concurrency, retries, stale evidence, policy changes, worker failure, and compensation, not just the happy path.
 Most "AI agent" demos stop at "the model calls a tool." That's not the hard part for a regulated or consequential system. The hard part is: what happens when the worker executing the AI's proposal dies mid-transaction? When two requests race for the same portfolio? When the policy changes between proposal and execution? When you need to reverse an action without erasing the record of what happened?
 Monster Heavy answers those questions with running code, not a diagram on a slide.
 > AI proposes → human authorizes → system verifies current evidence and current policy → execute or reject → preserve immutable evidence.
 Monster Heavy contains one AI agent: the Proposal Agent. It reasons over trusted grounding and produces a constrained recommendation that can become a pending proposal. Human approval, policy checks, execution, worker scheduling, compensation, and audit are deterministic application code — not additional AI agents, and not left to the model's discretion.
-Phase 5 has completed implementation review and release validation. Complete local validation and Docker-backed GitHub Actions Validate run #14 pass, satisfying AC-01 through AC-30. See the release evidence and AC-01–AC-30 test mapping.
+Phase 5 has completed implementation review and release validation. Complete local validation and Docker-backed GitHub Actions Validate run #14 passed, satisfying AC-01 through AC-30. See the release evidence and AC-01–AC-30 test mapping.
 Companion project
-Monster Heavy is the second half of a two-repo proof. Monster Light establishes the trust boundary itself — the minimal proposal → approve → execute contract. Monster Heavy takes that same boundary and proves it holds up under concurrency, retries, stale evidence, policy drift, worker failure, and compensation. (Link the Monster Light repo here.)
+Monster Heavy is the second half of a two-repo proof. [Monster Light](https://github.com/TAM-DS/monster-light-v0.1-v0.2) establishes the trust boundary itself — the minimal proposal → approve → execute contract. Monster Heavy takes that same boundary and proves it holds up under concurrency, retries, stale evidence, policy drift, worker failure, and compensation.
 How a proposal moves through the system
 ```mermaid
 flowchart LR
