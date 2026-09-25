@@ -1,102 +1,79 @@
 # Monster Heavy
 
-### Governed AI execution under enterprise failure conditions
+Governed AI proposals and deterministic paper execution with PostgreSQL recovery and audit.
 
-> **AI proposes → human authorizes → system verifies current evidence and current policy → execute or reject → preserve immutable evidence.**
+> AI proposes → human authorizes → system verifies current evidence and current policy → execute or reject → preserve immutable evidence.
 
-Monster Heavy is the production-oriented successor to Monster Light.
+Monster Heavy contains **one AI agent: the Proposal Agent**. It reasons over trusted grounding
+and produces a constrained recommendation that can become a pending proposal. Human approval,
+policy checks, execution, worker scheduling, compensation and audit are deterministic application
+code. They are not additional AI agents.
 
-Monster Light proved that a consequential AI workflow can keep recommendation, human authorization, deterministic validation, execution, and audit as separate responsibilities in a small inspectable system.
+Phase 5 has completed implementation review and release validation.
+Complete local validation and Docker-backed GitHub Actions Validate run #14 pass,
+satisfying AC-01 through AC-30. See the [release evidence](docs/PHASE5_RELEASE.md) and
+[AC-01–AC-30 test mapping](docs/ACCEPTANCE_CRITERIA.md#phase-5-acceptance-evidence).
 
-Monster Heavy asks the harder question:
+## Implemented behavior
 
-> **Does that trust model still hold when execution becomes concurrent, retryable, policy-governed, distributed across workers, and exposed to partial failure?**
+- Immutable proposal terms and human decisions preserve what was proposed and authorized.
+- `ExecutionStore.execute()` locks request, proposal and portfolio state, checks current policy
+  and fresh execution evidence, then atomically commits either a paper consequence with evidence
+  or a durable rejection. Money uses exact decimal arithmetic.
+- PostgreSQL request leases coordinate workers. Expired leases can be reclaimed; terminal work
+  is excluded. A stale worker still enters the same authoritative execution boundary. Process
+  death before commit leaves no consequence; replay after commit returns the durable result.
+- Compensation is a **new governed action**, linked to an accepted attempt. An operator requests
+  the opposite side with the same portfolio, symbol and quantity and fresh grounding. It needs
+  a new human approval and current execution validation. It never rolls back or erases history,
+  and changing prices mean it need not restore the original cash balance.
+- Metrics and decision reconstruction read PostgreSQL durable state. Logs are optional debugging
+  output. Immutable claim/replay events retain retry and duplicate-delivery measurements.
+- FastAPI exposes only `GET /health`, `/ready`, `/metrics`, and `/attempts/{attempt_id}`.
+  Audit transactions use a read-only PostgreSQL role. There are no HTTP mutation endpoints,
+  fake authentication or frontend. Production authentication remains outside v1 scope.
 
-## Status
+Worker processes are deterministic runners, not AI agents. Trusted composition supplies the
+paper observation provider to `Worker.run_once()`. Compose starts the audit environment; it does
+not generate trading intent, invent market observations, or start an autonomous trading loop.
 
-**Architecture locked. Phase 4 authoritative deterministic paper execution implemented.**
+Each behavior is exercised by the [acceptance evidence](docs/ACCEPTANCE_CRITERIA.md).
+Worker-death tests kill real spawned processes around the PostgreSQL commit boundary; concurrency
+tests use independent connections. These tests establish the specified failure cases, not an
+availability, latency, or throughput SLA. Metric definitions, timestamp semantics and provenance
+are documented in [Phase 5](docs/PHASE5_RELEASE.md).
 
-The architecture contract and acceptance criteria remain the source of truth. Phase 2 adds validated, immutable proposals, human decisions, typed evidence, lifecycle checks, and versioned policy publication/resolution on the Phase 1 PostgreSQL foundation. Phase 3 adds the sole AI agent: constrained model output becomes only a pending proposal through deterministic validation and ProposalService. Phase 4 adds durable execution requests, current-policy/current-evidence revalidation, atomic portfolio consequences, durable refusals, and committed-result replay. This is not the complete release.
+## Local environment
 
-See [Phase 2 boundaries and acceptance evidence](docs/PHASE2_BOUNDARIES.md) for the service contracts, design decisions, tests, and deferred execution behavior.
-
-See [Phase 3 authority boundary and acceptance evidence](docs/PHASE3_BOUNDARIES.md) for model constraints, trusted field binding, provenance, and validation results.
-
-See [Phase 4 execution boundaries and acceptance evidence](docs/PHASE4_BOUNDARIES.md) for transaction ordering, idempotency, exact portfolio rules, concurrency, and rollback tests.
-
-- [Architecture Contract](docs/ARCHITECTURE_CONTRACT.md)
-- [Acceptance Criteria](docs/ACCEPTANCE_CRITERIA.md)
-
-## Product thesis
-
-Monster Heavy is not a more complicated trading bot.
-
-It is a governed AI decision-and-execution platform demonstrated through a paper-trading domain because the domain makes authority, evidence, portfolio state, price drift, retries, and consequences easy to inspect.
-
-The system must remain trustworthy when:
-
-- multiple workers race the same approved proposal;
-- requests are retried after timeouts;
-- market evidence becomes stale or changes;
-- policy changes after human approval;
-- portfolio state changes between approval and execution;
-- a worker dies before or after a commit;
-- the same command is delivered more than once;
-- a previously accepted consequence requires an explicit compensating action.
-
-## Planned stack
-
-- Python 3.13
-- FastAPI
-- PostgreSQL
-- OpenAI SDK
-- pytest
-- Docker Compose
-- GitHub Actions
-
-The system will deliberately avoid infrastructure that does not earn its place. No Kafka, Kubernetes, Redis, Temporal, LangGraph, MCP, vector database, or additional cloud platform is part of the locked scope.
-
-## Non-negotiable invariant
-
-**Neither the model nor the human approver can bypass current reality.**
-
-A proposal is not authority.<br>
-Approval is not execution.<br>
-A retry is not a new consequence.<br>
-A successful response is not the source of truth.<br>
-The durable decision record is.
-
-## Scope
-
-Paper trading only. No broker integration. No real money.
-
-The portfolio project is about enterprise AI governance, reliable execution, failure recovery, and evidence—not market prediction.
-
-## Local validation environment
-
-Requires Docker with Docker Compose. Set up the local credential once:
+Stack: Python 3.13, PostgreSQL 17, OpenAI SDK, FastAPI, Uvicorn, pytest, Docker Compose and
+GitHub Actions. Requires Docker with Docker Compose. Configure a local credential once:
 
 ```sh
 cp .env.example .env
 # Edit .env and choose POSTGRES_PASSWORD.
-docker compose up --build -d
+docker compose up --build -d --wait
 ```
 
-This starts PostgreSQL 17 with persistent storage and runs the migration container to
-completion. There is no API or worker service. Check migration completion
-with `docker compose logs migrate` and service health with `docker compose ps -a`.
+The configuration starts PostgreSQL, completes checksum-verified migrations, then starts the
+read-only API at `http://127.0.0.1:8000`. PostgreSQL and API host ports bind to loopback.
+`GET /health` checks liveness; `GET /ready` checks database access and exact migration history.
+Inspect `docker compose ps -a` and `docker compose logs migrate api` for startup results.
 `docker compose down` preserves the database volume.
 
-Run the full validation suite against this **disposable development database**:
+Compose configuration, Docker image build, PostgreSQL/migration startup, read-only API startup,
+and HTTP health/readiness/metrics passed in GitHub Actions Validate run #14.
+The release evidence also records direct PostgreSQL and live Uvicorn tests.
+
+Run validation against a **disposable development database**:
 
 ```sh
 docker compose --profile validation run --build --rm validation
 ```
 
-Tests insert fixture history, including committed concurrency cases. Do not point them
-at a production database. They never silently substitute SQLite or skip PostgreSQL tests.
+Tests insert durable fixture history and create isolated migration databases. Do not point them
+at a production database. PostgreSQL tests never substitute SQLite or silently skip the database.
 
-For a host Python 3.13 environment with uv and PostgreSQL already installed:
+For a host Python environment with uv and PostgreSQL installed:
 
 ```sh
 uv sync --frozen --extra dev
@@ -104,25 +81,31 @@ uv sync --frozen --extra dev
 export DATABASE_URL='postgresql://OWNER:PASSWORD@localhost:5432/monster_heavy'
 export TEST_DATABASE_URL="$DATABASE_URL"
 sh scripts/validate.sh
+uv lock --check
+git diff --check
 ```
 
-`uv.lock` records the resolved Python dependencies. The `dev` extra includes pytest
-and Ruff. Both host setup and the Docker image install with `uv sync --frozen --extra dev`.
-The image uses uv 0.12.4 and runs `uv lock --check` before installation to reject a
-lockfile that is out of date with `pyproject.toml`. Run that check locally with
-`uv lock --check`; use `uv lock` only when intentionally updating the lockfile.
+Validation compiles sources, checks Ruff lint/format, applies/verifies migrations and runs unit,
+PostgreSQL integration, concurrency, process-death, compensation, metrics and API tests. CI uses
+the locked Docker image and verifies Compose configuration and API health. Dependency versions
+are recorded in `uv.lock`; the image verifies lockfile consistency before frozen installation.
+The [release record](docs/PHASE5_RELEASE.md) records successful local and GitHub Actions validation.
 
-Validation compiles sources, checks lint/formatting, applies and verifies migrations,
-runs unit and PostgreSQL integration tests (including independent-connection races),
-and runs `git diff --check` when Git metadata is available. GitHub Actions builds the
-locked images, starts the declared Compose PostgreSQL service, waits for its health
-check, and runs the same suite through the Compose validation service. Its migration
-dependency must complete successfully first. CI checks committed whitespace separately,
-prints Compose logs, and always runs cleanup of containers, the network, and the database
-volume, including after failed validation. Unit tests alone can run with `pytest tests/unit`.
+## Scope and contracts
 
-See [Phase 1 persistence contract](docs/PERSISTENCE_CONTRACT.md) for the schema, runtime
-role, exact database guarantees, test-to-criterion mapping, and deferred behavior.
-The architecture contract remains unchanged. Phase-specific acceptance evidence is linked above. The OpenAI adapter is injectable; validation uses mocked HTTP responses and makes no live
-OpenAI calls. No business endpoints, workers, market data, compensation, or real-money
-execution path is present.
+**Paper trading only. No broker integration, broker credentials or real-money path.** No real
+market-data feed or live model call is needed for validation. The OpenAI adapter is tested with
+mocked HTTP responses. No MCP, LangGraph, Redis, Kafka, Temporal, Kubernetes, message broker or
+additional AI agent is part of v1. Outbox records are durable; external event delivery and
+production identity provisioning remain outside scope.
+
+- [Architecture contract](docs/ARCHITECTURE_CONTRACT.md)
+- [Acceptance criteria and evidence](docs/ACCEPTANCE_CRITERIA.md)
+- [Phase 1 persistence](docs/PERSISTENCE_CONTRACT.md)
+- [Phase 2 application boundaries](docs/PHASE2_BOUNDARIES.md)
+- [Phase 3 Proposal Agent](docs/PHASE3_BOUNDARIES.md)
+- [Phase 4 authoritative execution](docs/PHASE4_BOUNDARIES.md)
+- [Phase 5 recovery, compensation and audit](docs/PHASE5_RELEASE.md)
+
+Earlier phase documents retain their historical validation records and deferrals; Phase 5
+supersedes their descriptions of missing workers, compensation, metrics and read-only HTTP audit.

@@ -92,6 +92,7 @@ class Proposal(Record):
     model_provenance: dict[str, Any]
     created_at: datetime
     expires_at: datetime
+    origin: str = "MODEL"
 
 
 @dataclass(frozen=True, kw_only=True)

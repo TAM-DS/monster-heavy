@@ -15,8 +15,14 @@ jobs:
         run: docker compose --profile validation build
       - name: Start PostgreSQL and wait for its health check
         run: docker compose up -d --wait --wait-timeout 120 postgres
-      - name: Run migrations and all Phase 1 validation
+      - name: Run migrations and complete v1 validation
         run: docker compose --profile validation run --rm validation
+      - name: Start and verify read-only API
+        run: |
+          docker compose up -d --wait --wait-timeout 120 api
+          curl --fail http://127.0.0.1:8000/health
+          curl --fail http://127.0.0.1:8000/ready
+          curl --fail http://127.0.0.1:8000/metrics
       - name: Check committed whitespace
         run: git show --format= --check HEAD
       - name: Show Compose logs

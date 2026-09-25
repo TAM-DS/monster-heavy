@@ -185,7 +185,8 @@ Evidence records are referenced by identifier from proposals and execution attem
 
 ### Execution orchestration boundary
 
-The API accepts execution intent and creates a durable execution request.
+The trusted Python execution application boundary accepts execution intent and creates a durable
+execution request. The v1 HTTP API is read-only (ADR-05 in PHASE5_RELEASE.md).
 
 Workers claim work from PostgreSQL rather than relying on an additional message broker.
 
@@ -350,20 +351,14 @@ Logs and traces may aid debugging, but they are not the authoritative audit reco
 
 ## 9. API boundary
 
-FastAPI is the operator and integration boundary.
+FastAPI is the read-only audit boundary in v1, following the explicit Phase 5 scope
+(ADR-05 in [Phase 5 release evidence](PHASE5_RELEASE.md)). It exposes health/readiness,
+durable control metrics, and reconstruction of attempts and their linked compensation history.
 
-The exact route names may evolve, but the API must expose operations equivalent to:
-
-- create/generate proposal;
-- approve/reject proposal;
-- submit execution request with idempotency key;
-- read proposal;
-- read execution result;
-- inspect decision history;
-- publish/read policy versions;
-- health/readiness.
-
-The API must not contain business rules that bypass application/domain services.
+Proposal creation, human approval, execution submission, compensation requests and policy
+publication remain trusted Python application boundaries. No HTTP mutation endpoint or fake
+authentication is provided. This transport decision does not change any governance invariant
+or remove an acceptance criterion. Production authentication remains outside v1 scope.
 
 ## 10. Security and identity boundary
 
