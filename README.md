@@ -5,8 +5,9 @@ Monster Heavy answers those questions with running code, not a diagram on a slid
 > AI proposes → human authorizes → system verifies current evidence and current policy → execute or reject → preserve immutable evidence.
 Monster Heavy contains one AI agent: the Proposal Agent. It reasons over trusted grounding and produces a constrained recommendation that can become a pending proposal. Human approval, policy checks, execution, worker scheduling, compensation, and audit are deterministic application code — not additional AI agents, and not left to the model's discretion.
 Phase 5 has completed implementation review and release validation. Complete local validation and Docker-backed GitHub Actions Validate run #14 passed, satisfying AC-01 through AC-30. See the release evidence and AC-01–AC-30 test mapping.
-Companion project
+Companion projects
 Monster Heavy is the second half of a two-repo proof. [Monster Light](https://github.com/TAM-DS/monster-light-v0.1-v0.2) establishes the trust boundary itself — the minimal proposal → approve → execute contract. Monster Heavy takes that same boundary and proves it holds up under concurrency, retries, stale evidence, policy drift, worker failure, and compensation.
+[Monster Desk](https://github.com/TAM-DS/monster-desk) is the four-seat paper console over this contract: Research proposes, Risk binds the ticket digest, Execution may submit only that digest, Surveillance records a halt. Desk does not replace Heavy. Heavy remains the durable engine and has no frontend on purpose. A simulated fill in Desk is not a street fill.
 How a proposal moves through the system
 ```mermaid
 flowchart LR
