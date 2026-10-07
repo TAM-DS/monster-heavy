@@ -4,7 +4,7 @@ Most "AI agent" demos stop at "the model calls a tool." That's not the hard part
 Monster Heavy answers those questions with running code, not a diagram on a slide.
 > AI proposes → human authorizes → system verifies current evidence and current policy → execute or reject → preserve immutable evidence.
 Monster Heavy contains one AI agent: the Proposal Agent. It reasons over trusted grounding and produces a constrained recommendation that can become a pending proposal. Human approval, policy checks, execution, worker scheduling, compensation, and audit are deterministic application code — not additional AI agents, and not left to the model's discretion.
-Phase 5 has completed implementation review and release validation. Complete local validation and Docker-backed GitHub Actions Validate run #14 passed, satisfying AC-01 through AC-30. See the release evidence and AC-01–AC-30 test mapping.
+Phase 5 has completed implementation review and release validation. Complete local validation and Docker-backed GitHub Actions Validate run #14 passed, satisfying AC-01 through AC-30. See the [release evidence](docs/PHASE5_RELEASE.md) and [AC-01–AC-30 test mapping](docs/ACCEPTANCE_CRITERIA.md).
 Companion projects
 Monster Heavy is the second half of a two-repo proof. [Monster Light](https://github.com/TAM-DS/monster-light-v0.1-v0.2) establishes the trust boundary itself — the minimal proposal → approve → execute contract. Monster Heavy takes that same boundary and proves it holds up under concurrency, retries, stale evidence, policy drift, worker failure, and compensation.
 [Monster Desk](https://github.com/TAM-DS/monster-desk) is the four-seat paper console over this contract: Research proposes, Risk binds the ticket digest, Execution may submit only that digest, Surveillance records a halt. Desk does not replace Heavy. Heavy remains the durable engine and has no frontend on purpose. A simulated fill in Desk is not a street fill.
@@ -75,11 +75,11 @@ git diff --check
 Validation compiles sources, checks Ruff lint/format, applies/verifies migrations, and runs unit, PostgreSQL integration, concurrency, process-death, compensation, metrics, and API tests. CI uses the locked Docker image and verifies Compose configuration and API health. Dependency versions are recorded in `uv.lock`; the image verifies lockfile consistency before frozen installation. The release record records successful local and GitHub Actions validation.
 Scope and contracts
 Paper trading only. No broker integration, broker credentials, or real-money path. No real market-data feed or live model call is needed for validation. The OpenAI adapter is tested with mocked HTTP responses. No MCP, LangGraph, Redis, Kafka, Temporal, Kubernetes, message broker, or additional AI agent is part of v1. Outbox records are durable; external event delivery and production identity provisioning remain outside scope.
-Architecture contract
-Acceptance criteria and evidence
-Phase 1 persistence
-Phase 2 application boundaries
-Phase 3 Proposal Agent
-Phase 4 authoritative execution
-Phase 5 recovery, compensation, and audit
+- [Architecture contract](docs/ARCHITECTURE_CONTRACT.md)
+- [Acceptance criteria and evidence](docs/ACCEPTANCE_CRITERIA.md)
+- [Phase 1 persistence](docs/PERSISTENCE_CONTRACT.md)
+- [Phase 2 application boundaries](docs/PHASE2_BOUNDARIES.md)
+- [Phase 3 Proposal Agent](docs/PHASE3_BOUNDARIES.md)
+- [Phase 4 authoritative execution](docs/PHASE4_BOUNDARIES.md)
+- [Phase 5 recovery, compensation, and audit](docs/PHASE5_RELEASE.md)
 Earlier phase documents retain their historical validation records and deferrals; Phase 5 supersedes their descriptions of missing workers, compensation, metrics, and read-only HTTP audit.
