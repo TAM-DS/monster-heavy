@@ -18,7 +18,7 @@ The intended business benefit is fewer duplicate consequences and a reconstructa
 
 | Audience | Review path |
 | --- | --- |
-| Business or hiring reviewer | [Ten-minute case walkthrough](docs/REVIEW_WALKTHROUGH.md): problem, decision, trade-offs, and limitations |
+| Business | [Ten-minute case walkthrough](docs/REVIEW_WALKTHROUGH.md): problem, decision, trade-offs, and limitations |
 | Engineer | [Execution boundary](src/monster_heavy/persistence/execution.py), [worker recovery tests](tests/integration/test_recovery_release.py), and [acceptance mapping](docs/ACCEPTANCE_CRITERIA.md#phase-5-acceptance-evidence) |
 | Operator | [Local environment](#local-environment), [audit failure behavior](docs/REVIEW_WALKTHROUGH.md#audit-availability), and [CI workflow](.github/workflows/validate.yml) |
 
