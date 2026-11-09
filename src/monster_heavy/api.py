@@ -15,8 +15,17 @@ from monster_heavy.persistence.audit import AuditStore
 def create_app(dsn: str | None = None) -> FastAPI:
     app = FastAPI(title="Monster Heavy audit", docs_url=None, redoc_url=None, openapi_url=None)
 
+    @app.exception_handler(psycopg.Error)
+    async def database_unavailable(request, exc):
+        # Database details may contain credentials or internal topology.
+        # Unavailable audit data must never look like an empty successful result.
+        return JSONResponse(status_code=503, content={"detail": "Database not ready"})
+
     def store():
-        return AuditStore(dsn or os.environ["DATABASE_URL"])
+        configured_dsn = dsn or os.environ.get("DATABASE_URL")
+        if not configured_dsn:
+            raise HTTPException(status_code=503, detail="Database not ready")
+        return AuditStore(configured_dsn)
 
     def response(value):
         # Preserve exact decimal values, including cash, quantities and measured seconds.
