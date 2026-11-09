@@ -6,10 +6,12 @@ A feature is not complete because a demo looks correct. It is complete when an a
 
 ## Current implementation evidence
 
-[Phase 4 evidence](PHASE4_BOUNDARIES.md#acceptance-evidence) maps the deterministic execution
-core to these criteria. It strengthens or completes core execution checks without claiming
-worker leasing/death recovery, compensation, metrics, or the full release gate. Prior phase
-evidence remains in the Phase 2/3 and persistence documents.
+The [Phase 5 acceptance mapping](#phase-5-acceptance-evidence) is the completed v1
+release baseline, including worker recovery, compensation, metrics, and the read-only API.
+[Phase 4 evidence](PHASE4_BOUNDARIES.md#acceptance-evidence) and the earlier phase
+documents retain historical results. Their deferrals do not describe the current v1 feature set.
+Later changes must pass the [validation workflow](../.github/workflows/validate.yml);
+the historical PASS mapping is not a substitute for checking that change's CI result.
 
 ## A. Authority boundaries
 
