@@ -65,9 +65,10 @@ def test_readiness_fails_closed_without_database():
         create_app("host=127.0.0.1 port=1 dbname=unavailable connect_timeout=1")
     ) as client:
         assert client.get("/health").status_code == 200
-        response = client.get("/ready")
-        assert response.status_code == 503
-        assert response.json() == {"detail": "Database not ready"}
+        for path in ("/ready", "/metrics", f"/attempts/{uuid4()}"):
+            response = client.get(path)
+            assert response.status_code == 503
+            assert response.json() == {"detail": "Database not ready"}
 
 
 def test_readiness_verifies_migration_checksums(dsn):
